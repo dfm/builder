@@ -5,6 +5,8 @@ from __future__ import print_function
 __all__ = ["Ceres"]
 
 import os
+import platform
+from distutils.version import StrictVersion
 
 from .builder import Library
 from .eigen3 import Eigen3
@@ -41,3 +43,12 @@ class Ceres(Library):
             libraries.remove("glog")
 
         return library_dirs, libraries
+
+    def extra_compile_args(self):
+        v = platform.mac_ver()
+        if v[0] != "":
+            if StrictVersion(v[0]) < StrictVersion("10.7"):
+                raise RuntimeError("Unsupported Mac OS version "
+                                   "(needs >= 10.7)")
+            return ["-stdlib=libc++", "-mmacosx-version-min=10.7"]
+        return []

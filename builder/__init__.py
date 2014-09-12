@@ -2,8 +2,11 @@
 
 __all__ = [
     "Library",
+    "build_ext",
     "eigen3",
+    "glog",
+    "ceres",
 ]
 
-from .builder import Library
-from . import eigen3
+from .builder import Library, build_ext
+from . import eigen3, glog, ceres

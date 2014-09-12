@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-__all__ = ["Library"]
+__all__ = ["Library", "build_ext"]
 
 import os
 import re
@@ -23,11 +23,17 @@ class build_ext(_build_ext):
     def build_extension(self, ext):
         include_dirs = ext.include_dirs + self.compiler.include_dirs
         library_dirs = ext.library_dirs + self.compiler.library_dirs
-        for lib in ext.libraries:
+        libs = list(ext.libraries)
+        ext.libraries = []
+        for lib in libs:
+            if not hasattr(lib, "find_include"):
+                ext.libraries += lib
+                continue
             ext.include_dirs += lib.find_include(hint=include_dirs)[1]
             lds, libs = lib.find_libraries(hint=library_dirs)
             ext.library_dirs += lds
             ext.libraries += libs
+            ext.extra_compile_args += lib.extra_compile_args()
         _build_ext.build_extension(self, ext)
 
 
@@ -159,3 +165,6 @@ class Library(object):
         txt = open(fn, "r").read()
         v = [re.findall(pattern, txt)[0] for pattern in self.version_re_list]
         return ".".join(v)
+
+    def extra_compile_args(self):
+        return []
